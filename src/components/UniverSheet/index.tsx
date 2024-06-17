@@ -11,33 +11,29 @@ import { UniverSheetsPlugin } from '@univerjs/sheets';
 import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
 import { UniverUIPlugin } from '@univerjs/ui';
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import { zhCN, enUS } from 'univer:locales'
 import ImportExcelButtonPlugin from '../../plugins/ImportExcelButton';
 import ExportExcelButtonPlugin from '../../plugins/ExportExcelButton';
 
 // eslint-disable-next-line react/display-name
-const UniverSheet = forwardRef(({ data }, ref) => {
+const UniverSheet = forwardRef(() => {
     const univerRef = useRef(null);
     const workbookRef = useRef(null);
     const containerRef = useRef(null);
     const [univeData, setUniveData] = useState({});
 
-    useImperativeHandle(ref, () => ({
-        getData,
-    }));
-
     const handleImportExcel: any = (data: any) => {
-        console.log(data);
-        // 更新组件状态以触发刷新
-        // setUniveData(data);
+        setUniveData(data);
     }
+
+    ImportExcelButtonPlugin.setOnImportExcelCallback(handleImportExcel);
 
     /**
      * Initialize univer instance and workbook instance
      * @param data {IWorkbookData} document see https://univer.work/api/core/interfaces/IWorkbookData.html
      */
-    const init = (data = {}) => {
+    const init = () => {
         if (!containerRef.current) {
             throw Error('container not initialized');
         }
@@ -70,40 +66,30 @@ const UniverSheet = forwardRef(({ data }, ref) => {
         univer.registerPlugin(UniverSheetsFormulaPlugin);
 
         // custom plugins
-        univer.registerPlugin(ImportExcelButtonPlugin, handleImportExcel);
+        univer.registerPlugin(ImportExcelButtonPlugin);
         univer.registerPlugin(ExportExcelButtonPlugin);
 
         // create workbook instance
-        univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
+        univer.createUnit(UniverInstanceType.UNIVER_SHEET, univeData);
     };
 
     /**
      * Destroy univer instance and workbook instance
      */
     const destroyUniver = () => {
-        // univerRef.current?.dispose();
         univerRef.current = null;
         workbookRef.current = null;
     };
 
-    /**
-     * Get workbook data
-     */
-    const getData = () => {
-        if (!workbookRef.current) {
-            throw new Error('Workbook is not initialized');
-        }
-        return workbookRef.current.save();
-    };
-
     useEffect(() => {
-        init(data);
+        init();
         return () => {
             destroyUniver();
         };
-    }, [data]);
+    }, [univeData]);
 
     return <div ref={containerRef} className="univer-container" />;
+
 });
 
 export default UniverSheet;

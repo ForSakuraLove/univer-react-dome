@@ -552,7 +552,9 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
  */
 class ImportExcelButtonPlugin extends UniverJS.Plugin {
     static override pluginName = "import-csv-plugin"
-    private readonly handler: any;
+
+    public static onImportExcelCallback: any;
+
     constructor(
         _config: null,
         // inject injector, required
@@ -563,11 +565,12 @@ class ImportExcelButtonPlugin extends UniverJS.Plugin {
         @Inject(UniverJS.ICommandService) private readonly commandService: UniverJS.ICommandService,
         // inject component manager, to register icon component
         @Inject(ComponentManager) private readonly componentManager: ComponentManager,
-        // 将方法作为构造函数参数
-        handler: any,
     ) {
         super();
-        this.handler = handler;
+    }
+
+    static setOnImportExcelCallback(callback: (data: any) => void) {
+        ImportExcelButtonPlugin.onImportExcelCallback = callback;
     }
 
     /** Plugin onStarting lifecycle */
@@ -602,9 +605,11 @@ class ImportExcelButtonPlugin extends UniverJS.Plugin {
                         univerWorkbook.addWorksheet(worksheet.name, sheetId, sheetInfo)
                     });
                     const univeData = univerWorkbook.getSnapshot()
-                    this.handler(11111)
-                    console.log(univeData)
-                    this.handler(univeData)
+                    if (ImportExcelButtonPlugin.onImportExcelCallback) {
+                        ImportExcelButtonPlugin.onImportExcelCallback(univeData);
+                    } else {
+                        console.error("onImportExcelCallback is not defined");
+                    }
                 });
                 return true;
             },
