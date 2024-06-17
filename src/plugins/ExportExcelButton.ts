@@ -26,10 +26,10 @@ const download_file = (buffer: ExcelJS.Buffer, fileName: string) => {
 }
 
 //下面是导出的函数
-const excelExport = async (univerWorkbook: UniverJS.Workbook) => {
+const excelExport = async (univerWorkbook: any) => {
     const workbook = new ExcelJS.Workbook();
     const sheetMap = univerWorkbook.getWorksheets()
-    sheetMap.forEach(sheet => {
+    sheetMap.forEach((sheet: any) => {
         const worksheet = workbook.addWorksheet(sheet.getName());
         // 遍历行
         for (let row = 0; row < sheet.getRowCount(); row++) {
@@ -89,9 +89,8 @@ class ExportExcelButtonPlugin extends UniverJS.Plugin {
             type: UniverJS.CommandType.OPERATION,
             id: buttonId,
             handler: (accessor: IAccessor) => {
-                // inject univer instance service
                 const univer = accessor.get(UniverJS.IUniverInstanceService);
-                const univerWorkbook = univer.getCurrentUniverSheetInstance()
+                const univerWorkbook = univer.getCurrentUnitForType<UniverJS.Workbook>(UniverJS.UniverInstanceType.UNIVER_SHEET)
                 excelExport(univerWorkbook);
             },
         };

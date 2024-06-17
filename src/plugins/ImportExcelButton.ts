@@ -589,19 +589,14 @@ class ImportExcelButtonPlugin extends UniverJS.Plugin {
             type: UniverJS.CommandType.OPERATION,
             id: buttonId,
             handler: (accessor: IAccessor) => {
-                // inject univer instance service
                 const univer = accessor.get(UniverJS.IUniverInstanceService);
-
-                // get current sheet
                 const univerWorkbook = univer.getCurrentUnitForType<UniverJS.Workbook>(UniverJS.UniverInstanceType.UNIVER_SHEET)
                 if (!univerWorkbook) return
-                // const univerWorkbook = univer.getCurrentUniverSheetInstance()
                 const sheetMap = univerWorkbook.getWorksheets()
                 sheetMap?.forEach((sheet: any) => {
                     univerWorkbook?.removeSheet(sheet.getSheetId())
                 })
                 waitUserSelectExcelFile((workbook: ExcelJS.Workbook) => {
-                    // 处理 Excel 数据
                     workbook.eachSheet((worksheet, sheetId) => {
                         const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
                         univerWorkbook.addWorksheet(worksheet.name, sheetId, sheetInfo)
