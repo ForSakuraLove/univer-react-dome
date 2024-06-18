@@ -142,7 +142,6 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
 
             //字体名字，如宋体
             if (cell.style.font?.name) {
-                console.log(cell.style.font.name)
                 cellStyle.ff = cell.style.font.name
             }
 
@@ -190,8 +189,8 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
             if (cell.style.fill) {
                 if (cell.style.fill.type === 'pattern') {
                     if (cell.style.fill.fgColor?.argb) {
-                        // const argb = cell.style.fill.fgColor.argb
-                        // cellStyleBackground.rgb = '#' + argb.slice(-6);
+                        const argb = cell.style.fill.fgColor.argb
+                        cellStyleBackground.rgb = '#' + argb.slice(-6);
                     }
                 }
             }
@@ -235,6 +234,12 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                 }
                 cellStyleIBorderStyleData.cl = cellStyleIColorStyle
                 cellStyleBorder.l = cellStyleIBorderStyleData
+            } else {
+                let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
+                let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
+                cellStyleIBorderStyleData.s = 1
+                cellStyleIBorderStyleData.cl = cellStyleIColorStyle
+                cellStyleBorder.l = cellStyleIBorderStyleData
             }
 
             //上边框
@@ -272,6 +277,12 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                     const argb = cell.style.border.top.color.argb
                     cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
                 }
+                cellStyleIBorderStyleData.cl = cellStyleIColorStyle
+                cellStyleBorder.t = cellStyleIBorderStyleData
+            } else {
+                let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
+                let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
+                cellStyleIBorderStyleData.s = 1
                 cellStyleIBorderStyleData.cl = cellStyleIColorStyle
                 cellStyleBorder.t = cellStyleIBorderStyleData
             }
@@ -313,6 +324,12 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                 }
                 cellStyleIBorderStyleData.cl = cellStyleIColorStyle
                 cellStyleBorder.r = cellStyleIBorderStyleData
+            } else {
+                let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
+                let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
+                cellStyleIBorderStyleData.s = 1
+                cellStyleIBorderStyleData.cl = cellStyleIColorStyle
+                cellStyleBorder.r = cellStyleIBorderStyleData
             }
 
             //下边框
@@ -350,6 +367,12 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                     const argb = cell.style.border.bottom.color.argb
                     cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
                 }
+                cellStyleIBorderStyleData.cl = cellStyleIColorStyle
+                cellStyleBorder.b = cellStyleIBorderStyleData
+            } else {
+                let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
+                let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
+                cellStyleIBorderStyleData.s = 1
                 cellStyleIBorderStyleData.cl = cellStyleIColorStyle
                 cellStyleBorder.b = cellStyleIBorderStyleData
             }
@@ -491,7 +514,7 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
             cellStyle.ul = cellStyleITextDecoration
             cellStyle.st = cellStyleStrikeITextDecoration
             // cellStyle.ol
-            // cellStyle.bg = cellStyleBackground
+            cellStyle.bg = cellStyleBackground
             cellStyle.bd = cellStyleBorder
             cellStyle.cl = cellStyleForeground
             cellStyle.va = cellStyleBaselineOffset
