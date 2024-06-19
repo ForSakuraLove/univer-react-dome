@@ -21,6 +21,7 @@
     "@univerjs/sheets-ui": "0.1.15",
     "@univerjs/ui": "0.1.15",
     "@wendellhu/redi": "0.15.4",
+    "@univerjs/facade": "0.1.15",
     "exceljs": "4.4.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",

@@ -1,5 +1,5 @@
 import { useRef, } from 'react';
-import UniverSheet from './components/UniverSheet/index.tsx';
+import UniverSheet from './index.tsx';
 
 function App() {
     const univerRef = useRef();

@@ -4,7 +4,7 @@ import "@univerjs/docs-ui/lib/index.css";
 import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula/lib/index.css";
 
-import { Univer, LocaleType, UniverInstanceType ,Tools} from '@univerjs/core';
+import { Univer, LocaleType, UniverInstanceType, Tools } from '@univerjs/core';
 import { defaultTheme } from '@univerjs/design';
 import { UniverDocsPlugin } from '@univerjs/docs';
 import { UniverDocsUIPlugin } from '@univerjs/docs-ui';
@@ -15,9 +15,14 @@ import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
 import { UniverUIPlugin } from '@univerjs/ui';
 import React, { forwardRef, useEffect, useRef, useState } from 'react';
-// import { zhCN, enUS } from 'univer:locales'
-import ImportExcelButtonPlugin from '../../plugins/ImportExcelButton';
-import ExportExcelButtonPlugin from '../../plugins/ExportExcelButton';
+import { UniverSheetsCustomMenuPlugin } from "./plugin";
+import DesignZhCN from '@univerjs/design/locale/zh-CN';
+import UIZhCN from '@univerjs/ui/locale/zh-CN';
+import DocsUIZhCN from '@univerjs/docs-ui/locale/zh-CN';
+import SheetsZhCN from '@univerjs/sheets/locale/zh-CN';
+import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN';
+// import ImportExcelButtonPlugin from '../../plugins/ImportExcelButton';
+// import ExportExcelButtonPlugin from '../../plugins/ExportExcelButton';
 
 // eslint-disable-next-line react/display-name
 const UniverSheet = forwardRef(() => {
@@ -30,7 +35,7 @@ const UniverSheet = forwardRef(() => {
         setUniveData(data);
     }
 
-    ImportExcelButtonPlugin.setOnImportExcelCallback(handleImportExcel);
+    // ImportExcelButtonPlugin.setOnImportExcelCallback(handleImportExcel);
 
     /**
      * Initialize univer instance and workbook instance
@@ -44,8 +49,13 @@ const UniverSheet = forwardRef(() => {
             theme: defaultTheme,
             locale: LocaleType.ZH_CN,
             locales: {
-                // [LocaleType.ZH_CN]: zhCN,
-                // [LocaleType.EN_US]: enUS,
+                [LocaleType.ZH_CN]: Tools.deepMerge(
+                    SheetsZhCN,
+                    DocsUIZhCN,
+                    SheetsUIZhCN,
+                    UIZhCN,
+                    DesignZhCN,
+                ),
             },
         });
         univerRef.current = univer;
@@ -69,8 +79,9 @@ const UniverSheet = forwardRef(() => {
         univer.registerPlugin(UniverSheetsFormulaPlugin);
 
         // custom plugins
-        univer.registerPlugin(ImportExcelButtonPlugin);
-        univer.registerPlugin(ExportExcelButtonPlugin);
+        univer.registerPlugin(UniverSheetsCustomMenuPlugin);
+        // univer.registerPlugin(ImportExcelButtonPlugin);
+        // univer.registerPlugin(ExportExcelButtonPlugin);
 
         // create workbook instance
         univer.createUnit(UniverInstanceType.UNIVER_SHEET, univeData);
@@ -91,7 +102,9 @@ const UniverSheet = forwardRef(() => {
         };
     }, [univeData]);
 
-    return <div ref={containerRef} className="univer-container" style={{ height: '100%' }} />;
+    return (
+        <div ref={containerRef} className="univer-container" style={{ height: '100%' }} />
+    );
 
 });
 
