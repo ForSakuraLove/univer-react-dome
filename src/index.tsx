@@ -36,6 +36,7 @@ const UniverSheet = forwardRef(() => {
     }
 
     // ImportExcelButtonPlugin.setOnImportExcelCallback(handleImportExcel);
+    UniverSheetsCustomMenuPlugin.setOnImportExcelCallback(handleImportExcel);
 
     /**
      * Initialize univer instance and workbook instance

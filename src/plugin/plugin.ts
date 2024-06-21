@@ -33,6 +33,7 @@ const SHEET_CUSTOM_MENU_PLUGIN = 'SHEET_CUSTOM_MENU_PLUGIN';
 export class UniverSheetsCustomMenuPlugin extends Plugin {
     static override type = UniverInstanceType.UNIVER_SHEET;
     static override pluginName = SHEET_CUSTOM_MENU_PLUGIN;
+    public static onImportExcelCallback: any;
 
     constructor(
         @Inject(Injector) protected readonly _injector: Injector,
@@ -44,6 +45,10 @@ export class UniverSheetsCustomMenuPlugin extends Plugin {
             zhCN,
             enUS
         });
+    }
+
+    static setOnImportExcelCallback(callback: (data: any) => void) {
+        UniverSheetsCustomMenuPlugin.onImportExcelCallback = callback;
     }
 
     override onStarting(injector: Injector): void {

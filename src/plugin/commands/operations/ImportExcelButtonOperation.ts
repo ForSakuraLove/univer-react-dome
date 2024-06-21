@@ -1,8 +1,9 @@
-import type { ICommand } from '@univerjs/core';
+import type { ICommand, } from '@univerjs/core';
 import { CommandType } from '@univerjs/core';
 import type { IAccessor } from '@wendellhu/redi';
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
+import { UniverSheetsCustomMenuPlugin } from '../../index'
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook) => void,
@@ -572,7 +573,7 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
 export const ImportExcelButtonOperation: ICommand = {
     id: 'custom-menu.operation.ImportExcel',
     type: CommandType.OPERATION,
-    handler: async (accessor: IAccessor, handleImportExcel: any): Promise<boolean> => {
+    handler: async (accessor: IAccessor): Promise<boolean> => {
         const univer = accessor.get(UniverJS.IUniverInstanceService);
         const univerWorkbook = univer.getCurrentUnitForType<UniverJS.Workbook>(UniverJS.UniverInstanceType.UNIVER_SHEET)
         if (!univerWorkbook) return false;
@@ -587,7 +588,11 @@ export const ImportExcelButtonOperation: ICommand = {
                 univerWorkbook.addWorksheet(worksheet.name, sheetId, sheetInfo);
             });
             const univeData = univerWorkbook.getSnapshot();
-            handleImportExcel(univeData);
+            if (UniverSheetsCustomMenuPlugin.onImportExcelCallback) {
+                UniverSheetsCustomMenuPlugin.onImportExcelCallback(univeData);
+            } else {
+                console.error("onImportExcelCallback is not defined");
+            }
         });
 
         return true;
