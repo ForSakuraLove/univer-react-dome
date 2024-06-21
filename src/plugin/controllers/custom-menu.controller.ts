@@ -20,7 +20,7 @@ export class CustomMenuController extends Disposable {
         @Inject(ComponentManager) private readonly _componentManager: ComponentManager,
     ) {
         super();
-        
+
         this._initCommands();
         this._registerComponents();
         this._initMenus();
@@ -30,15 +30,8 @@ export class CustomMenuController extends Disposable {
      * register commands
     */
     private _initCommands(): void {
-        const handleImportExcel = (data: any) => {
-            console.log('Handling imported data in CustomMenuController:', data);
-        };
-
-        this.disposeWithMe(this._commandService.registerCommand({
-            ...ImportExcelButtonOperation,
-            handler: async (accessor, params, options) => ImportExcelButtonOperation.handler(accessor, handleImportExcel, options)
-        }));
         [
+            ImportExcelButtonOperation,
             ExportExcelButtonOperation,
         ].forEach((c) => {
             this.disposeWithMe(this._commandService.registerCommand(c));
