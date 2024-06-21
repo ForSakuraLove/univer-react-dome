@@ -169,9 +169,9 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                 if (cell.font.underline === 'double') {
                     cellStyleTextDecoration = 10
                 } else if (cell.font.underline === 'singleAccounting') {
-                    cellStyleTextDecoration = 12
+                    cellStyleTextDecoration = 14
                 } else if (cell.font.underline === 'doubleAccounting') {
-                    cellStyleTextDecoration = 10
+                    cellStyleTextDecoration = 15
                 }
                 cellStyleITextDecoration.t = cellStyleTextDecoration
             }

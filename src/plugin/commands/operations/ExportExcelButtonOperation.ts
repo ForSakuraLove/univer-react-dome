@@ -29,20 +29,83 @@ const download_file = (buffer: ExcelJS.Buffer, fileName: string) => {
 const excelExport = async (univerWorkbook: any) => {
     const workbook = new ExcelJS.Workbook();
     const sheetMap = univerWorkbook.getWorksheets()
-    sheetMap.forEach((sheet: any) => {
-        const worksheet = workbook.addWorksheet(sheet.getName());
-        for (let row = 0; row < sheet.getRowCount(); row++) {
-            const rowData: any[] = [];
-            for (let col = 0; col < sheet.getColumnCount(); col++) {
-                const cell = sheet.getCell(row, col);
-                if (cell) {
-                    rowData[col] = cell.v
+    sheetMap.forEach((univerSheet: UniverJS.Worksheet) => {
+        const excelsheet = workbook.addWorksheet(univerSheet.getName());
+        const mergeDataList: UniverJS.IRange[] = univerSheet.getMergeData();
+        const cellMatrix = univerSheet.getCellMatrixPrintRange();
+        if (!cellMatrix) return;
+        for (let row = 0; row < cellMatrix.endRow + 1; row++) {
+            for (let col = 0; col < cellMatrix.endColumn + 1; col++) {
+                const univerCell = univerSheet.getCell(row, col);
+                const excelCell = excelsheet.getCell(row + 1, col + 1);
+                console.log(row + 1, col + 1)
+                console.log(univerCell)
+                if (univerCell) {
+                    if (univerCell?.v) {
+                        excelCell.value = univerCell.v
+                    } else {
+                        excelCell.value = '';
+                    }
+                    if (univerCell?.s) {
+                        if (typeof univerCell.s !== 'string' && univerCell.s !== null && univerCell.s !== undefined) {
+                            const styleData: UniverJS.IStyleData = univerCell.s;
+                            //字体
+                            if (styleData?.ff) {
+                                //underline
+                                let underline: boolean | 'none' | 'single' | 'double' | 'singleAccounting' | 'doubleAccounting' = false
+                                if (styleData.ul?.s === 1) {
+                                    underline = true
+                                    if (styleData.ul.t === 12) {
+                                        underline = 'single'
+                                    } else if (styleData.ul.t === 10) {
+                                        underline = 'double'
+                                    } else if (styleData.ul.t === 14) {
+                                        underline = 'singleAccounting'
+                                    } else if (styleData.ul.t === 15) {
+                                        underline = 'doubleAccounting'
+                                    }
+                                }
+                                //vertAlign
+                                if (styleData.va === 2) {
+                                    excelCell.font = {
+                                        vertAlign: 'subscript'
+                                    }
+                                } else if (styleData.va === 3) {
+                                    excelCell.font = {
+                                        vertAlign: 'superscript'
+                                    }
+                                }
+                                //fontColor
+                                const fontColor: Partial<ExcelJS.Color> = { argb: 'FF' + styleData.cl?.rgb?.slice(-6) }
+                                excelCell.font = {
+                                    ...excelCell.font,
+                                    name: styleData.ff,//fontFamily
+                                    size: styleData.fs || 11,//fontSize
+                                    bold: styleData.bl === 1,//bold
+                                    italic: styleData.it === 1,//italic
+                                    underline,//underline
+                                    strike: styleData.st?.s === 1,//strikethrough
+                                    color: fontColor,
+                                };
+                            }
+                        }
+                        //对齐方式
+                        
+                    }
                 }
             }
-            worksheet.addRow(rowData);
         }
-    })
 
+        mergeDataList.forEach((mergeData: any) => {
+            const mergeCell: ExcelJS.Location = {
+                top: mergeData.startRow + 1,
+                left: mergeData.startColumn + 1,
+                bottom: mergeData.endRow + 1,
+                right: mergeData.endColumn + 1,
+            };
+            excelsheet.mergeCells(mergeCell)
+        })
+    })
     // 写入文件
     const buffer = await workbook.xlsx.writeBuffer();
     //下载文件
