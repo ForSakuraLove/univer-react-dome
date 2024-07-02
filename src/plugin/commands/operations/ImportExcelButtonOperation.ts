@@ -4,6 +4,7 @@ import type { IAccessor } from '@wendellhu/redi';
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
 import { UniverSheetsCustomMenuPlugin } from '../../index'
+import { DEFAULT_BORDER_COLOR } from '../../../utils/enum';
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook) => void,
@@ -236,7 +237,7 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                 cellStyleIBorderStyleData.cl = cellStyleIColorStyle
                 cellStyleBorder.l = cellStyleIBorderStyleData
             } else {
-                let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
+                let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: DEFAULT_BORDER_COLOR }
                 let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
                 cellStyleIBorderStyleData.s = 1
                 cellStyleIBorderStyleData.cl = cellStyleIColorStyle
@@ -417,6 +418,9 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                 if (cell.style.border.diagonal.up === false && cell.style.border.diagonal.down === true) {
                     cellStyleBorder.tl_br = cellStyleIBorderStyleData
                 } else if (cell.style.border.diagonal.up === true && cell.style.border.diagonal.down === false) {
+                    cellStyleBorder.bl_tr = cellStyleIBorderStyleData
+                } else if (cell.style.border.diagonal.up === true && cell.style.border.diagonal.down === true) {
+                    cellStyleBorder.tl_br = cellStyleIBorderStyleData
                     cellStyleBorder.bl_tr = cellStyleIBorderStyleData
                 }
             }

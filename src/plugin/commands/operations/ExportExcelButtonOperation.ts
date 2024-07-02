@@ -3,6 +3,8 @@ import { CommandType } from '@univerjs/core';
 import type { IAccessor } from '@wendellhu/redi';
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
+import { borderMap } from '../../../utils/map'
+import { DEFAULT_BORDER_COLOR } from '../../../utils/enum';
 
 //格式化时间
 const formatDate = (date: Date) => {
@@ -29,6 +31,15 @@ const download_file = (buffer: ExcelJS.Buffer, fileName: string) => {
 const excelExport = async (univerWorkbook: any) => {
     const workbook = new ExcelJS.Workbook();
     const sheetMap = univerWorkbook.getWorksheets()
+
+    const createColor = (rgb: UniverJS.Nullable<string>): ExcelJS.Color => {
+        const colorValue = rgb ? 'FF' + rgb.slice(-6) : 'FFFFFFFF'; // 默认颜色是白色，如果rgb为null或undefined
+        return {
+            argb: colorValue,
+            theme: -1 // 非正确主题
+        };
+    };
+
     sheetMap.forEach((univerSheet: UniverJS.Worksheet) => {
         const excelsheet = workbook.addWorksheet(univerSheet.getName());
         const mergeDataList: UniverJS.IRange[] = univerSheet.getMergeData();
@@ -66,17 +77,18 @@ const excelExport = async (univerWorkbook: any) => {
                                     }
                                 }
                                 //vertAlign
-                                if (styleData.va === 2) {
+                                if (styleData?.va === 2) {
                                     excelCell.font = {
                                         vertAlign: 'subscript'
                                     }
-                                } else if (styleData.va === 3) {
+                                } else if (styleData?.va === 3) {
                                     excelCell.font = {
                                         vertAlign: 'superscript'
                                     }
                                 }
-                                //fontColor
-                                const fontColor: Partial<ExcelJS.Color> = { argb: 'FF' + styleData.cl?.rgb?.slice(-6) }
+
+                                const fontColor: Partial<ExcelJS.Color> = createColor(styleData.cl?.rgb)
+
                                 excelCell.font = {
                                     ...excelCell.font,
                                     name: styleData.ff,//fontFamily
@@ -88,9 +100,143 @@ const excelExport = async (univerWorkbook: any) => {
                                     color: fontColor,
                                 };
                             }
+
+                            //对齐方式
+                            // horizontal: 'left' | 'center' | 'right' | 'fill' | 'justify' | 'centerContinuous' | 'distributed';
+                            let horizontal: ExcelJS.Alignment['horizontal'] | undefined = undefined;
+                            if (styleData?.ht === 1) {
+                                horizontal = 'left'
+                            } else if (styleData?.ht === 2) {
+                                horizontal = 'center'
+                            } else if (styleData?.ht === 3) {
+                                horizontal = 'right'
+                            } else if (styleData?.ht === 4) {
+                                horizontal = 'justify'
+                            }
+
+                            // vertical: 'top' | 'middle' | 'bottom' | 'distributed' | 'justify';
+                            let vertical: ExcelJS.Alignment['vertical'] | undefined = undefined;
+                            if (styleData?.ht === 1) {
+                                vertical = 'top'
+                            } else if (styleData?.ht === 2) {
+                                vertical = 'middle'
+                            } else if (styleData?.ht === 3) {
+                                vertical = 'bottom'
+                            }
+
+                            // wrapText: boolean;
+                            let wrapText = false
+                            if (styleData?.tb === 3) {
+                                wrapText = true
+                            }
+
+                            // readingOrder: 'rtl' | 'ltr';
+                            let readingOrder: ExcelJS.Alignment['readingOrder'] | undefined = undefined;
+                            if (styleData?.td === 1) {
+                                readingOrder = 'ltr'
+                            } else if (styleData?.td === 2) {
+                                readingOrder = 'rtl'
+                            }
+
+                            // textRotation: number | 'vertical';
+                            let textRotation: ExcelJS.Alignment['textRotation'] | undefined = undefined;
+                            if (styleData?.tr) {
+                                if (styleData?.tr.a) {
+                                    textRotation = -styleData?.tr.a
+                                }
+                                if (styleData?.tr.v === 1) {
+                                    textRotation = 'vertical'
+                                }
+                            }
+
+                            const alignment: Partial<ExcelJS.Alignment> = {
+                                horizontal: horizontal,
+                                vertical: vertical,
+                                wrapText: wrapText,
+                                // shrinkToFit: ,
+                                // indent: ,
+                                readingOrder: readingOrder,
+                                textRotation: textRotation,
+                            }
+                            excelCell.alignment = alignment
+
+                            //边框
+                            let top: ExcelJS.Borders['top'] | undefined = undefined;
+                            if (styleData?.bd?.t) {
+                                if (styleData.bd.t.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.t.s !== 1) {
+                                    top = {
+                                        style: borderMap[styleData.bd.t.s],
+                                        color: createColor(styleData.bd.t.cl.rgb),
+                                    }
+                                }
+                            }
+                            let left: ExcelJS.Borders['left'] | undefined = undefined;
+                            if (styleData?.bd?.l) {
+                                if (styleData.bd.l.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.l.s !== 1) {
+                                    left = {
+                                        style: borderMap[styleData.bd.l.s],
+                                        color: createColor(styleData.bd.l.cl.rgb),
+                                    }
+                                }
+                            }
+                            let right: ExcelJS.Borders['right'] | undefined = undefined;
+                            if (styleData?.bd?.r) {
+                                if (styleData.bd.r.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.r.s !== 1) {
+                                    right = {
+                                        style: borderMap[styleData.bd.r.s],
+                                        color: createColor(styleData.bd.r.cl.rgb),
+                                    }
+                                }
+                            }
+                            let bottom: ExcelJS.Borders['bottom'] | undefined = undefined;
+                            if (styleData?.bd?.b) {
+                                if (styleData.bd.b.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.b.s !== 1) {
+                                    bottom = {
+                                        style: borderMap[styleData.bd.b.s],
+                                        color: createColor(styleData.bd.b.cl.rgb),
+                                    }
+                                }
+                            }
+
+                            let diagonal: ExcelJS.BorderDiagonal | undefined = undefined;
+                            if (styleData?.bd?.tl_br || styleData?.bd?.bl_tr) {
+                                let diagonalStyle: Partial<ExcelJS.BorderDiagonal> = {};
+                                if (styleData.bd.tl_br) {
+                                    diagonalStyle = {
+                                        style: borderMap[styleData.bd.tl_br.s],
+                                        color: createColor(styleData.bd.tl_br.cl.rgb),
+                                        up: false,
+                                        down: true,
+                                    };
+                                }
+                                if (styleData.bd.bl_tr) {
+                                    diagonalStyle = {
+                                        style: borderMap[styleData.bd.bl_tr.s],
+                                        color: createColor(styleData.bd.bl_tr.cl.rgb),
+                                        up: true,
+                                        down: false,
+                                    };
+                                }
+                                if (styleData.bd.tl_br && styleData.bd.bl_tr) {
+                                    diagonalStyle = {
+                                        style: borderMap[styleData.bd.bl_tr.s],
+                                        color: createColor(styleData.bd.bl_tr.cl.rgb),
+                                        up: true,
+                                        down: true,
+                                    };
+                                }
+                                diagonal = diagonalStyle as ExcelJS.BorderDiagonal;
+                            }
+
+                            const border: Partial<ExcelJS.Borders> = {
+                                top: top,
+                                left: left,
+                                right: right,
+                                bottom: bottom,
+                                diagonal: diagonal,
+                            }
+                            excelCell.border = border;
                         }
-                        //对齐方式
-                        
                     }
                 }
             }
