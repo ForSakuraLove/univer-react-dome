@@ -1,39 +1,48 @@
-import type { ICommand, } from '@univerjs/core';
-import { CommandType } from '@univerjs/core';
-import type { IAccessor } from '@wendellhu/redi';
+import * as FUniver from "@univerjs/facade";
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
-import { UniverSheetsCustomMenuPlugin } from '../../index'
-import { DEFAULT_BORDER_COLOR } from '../../../utils/enum';
+import { DEFAULT_BORDER_COLOR } from '../utils/enum';
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook) => void,
+    onError: (error: Error) => void
 ) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".xls, .xlsx";
+    try {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = ".xls, .xlsx";
 
-    input.click();
+        input.click();
 
-    input.onchange = () => {
-        const file = input.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        const workbook = new ExcelJS.Workbook();
-        reader.onload = () => {
-            if (reader.result instanceof ArrayBuffer) {
-                const data = new Uint8Array(reader.result);
-                workbook.xlsx.load(data).then(() => {
-                    onSelect(workbook);
-                })
+        input.onchange = () => {
+            const file = input.files?.[0];
+            if (!file) {
+                onError(new Error('No file selected.'));
+                return;
             }
-            else {
-                console.error('Reader result is not an ArrayBuffer.');
-            }
+
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+
+            reader.onload = () => {
+                if (reader.result instanceof ArrayBuffer) {
+                    const data = new Uint8Array(reader.result);
+                    const workbook = new ExcelJS.Workbook();
+                    workbook.xlsx.load(data).then(() => {
+                        onSelect(workbook);
+                    }).catch(error => {
+                        onError(error);
+                    });
+                } else {
+                    onError(new Error('Reader result is not an ArrayBuffer.'));
+                }
+            };
         };
-    };
+    } catch (error) {
+        onError(error instanceof Error ? error : new Error('Unknown error occurred.'));
+    }
 };
+
 /**
  * Parse Excel worksheet to extract relevant information.
  * @param sheet The Excel worksheet to parse.
@@ -574,33 +583,39 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
     return sheetData;
 };
 
-export const ImportExcelButtonOperation: ICommand = {
-    id: 'custom-menu.operation.ImportExcel',
-    type: CommandType.OPERATION,
-    handler: async (accessor: IAccessor): Promise<boolean> => {
-        const univer = accessor.get(UniverJS.IUniverInstanceService);
-        const univerWorkbook = univer.getCurrentUnitForType<UniverJS.Workbook>(UniverJS.UniverInstanceType.UNIVER_SHEET)
-        console.log(univerWorkbook)
-        if (!univerWorkbook) return false;
+export const importExcel = (univerAPI: FUniver.FUniver) => {
 
-        const sheetMap = univerWorkbook.getWorksheets();
-        sheetMap?.forEach((sheet: any) => {
-            univerWorkbook?.removeSheet(sheet.getSheetId());
-        });
-        waitUserSelectExcelFile((workbook: ExcelJS.Workbook) => {
-            workbook.eachSheet((worksheet: any, sheetId: any) => {
-                const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
-                univerWorkbook.addWorksheet(worksheet.name, sheetId, sheetInfo);
-            });
-            const univeData = univerWorkbook.getSnapshot();
-            console.log(univeData)
-            if (UniverSheetsCustomMenuPlugin.onImportExcelCallback) {
-                UniverSheetsCustomMenuPlugin.onImportExcelCallback(univeData);
-            } else {
-                console.error("onImportExcelCallback is not defined");
-            }
-        });
+    const univerWorkbook = univerAPI.getActiveWorkbook()
+    if (!univerWorkbook) {
+        console.log('univerWorkbook is null')
+        return
+    }
 
-        return true;
-    },
-};
+    waitUserSelectExcelFile((workbook: ExcelJS.Workbook) => {
+        const unid = univerWorkbook.getId()
+        univerAPI.disposeUnit(unid)
+        let sheetInfos: UniverJS.IWorksheetData[] = [];
+        workbook.eachSheet((worksheet: any) => {
+            const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
+            sheetInfos = [...sheetInfos, sheetInfo];
+        });
+        let workbookInfo: UniverJS.IWorkbookData = {
+            id: 'someUniqueId',
+            rev: 1,
+            name: 'Workbook Name',
+            appVersion: '1.0.0',
+            locale: UniverJS.LocaleType.ZH_CN,
+            styles: {},
+            sheetOrder: sheetInfos.map((sheet) => sheet.id),
+            sheets: sheetInfos.reduce((acc, sheetInfo) => {
+                acc[sheetInfo.id] = sheetInfo;
+                return acc;
+            }, {} as { [sheetId: string]: Partial<UniverJS.IWorksheetData> }),
+            resources: []
+        };
+        univerAPI.createUniverSheet(workbookInfo)
+    }, (error) => {
+        console.log('Error selecting or processing file:', error);
+    })
+
+}

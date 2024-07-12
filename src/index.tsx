@@ -1,10 +1,5 @@
-import '@univerjs/design/lib/index.css';
-import "@univerjs/ui/lib/index.css";
-import "@univerjs/docs-ui/lib/index.css";
-import "@univerjs/sheets-ui/lib/index.css";
-import "@univerjs/sheets-formula/lib/index.css";
-
 import { Univer, LocaleType, UniverInstanceType, Tools } from '@univerjs/core';
+import { FUniver } from "@univerjs/facade";
 import { defaultTheme } from '@univerjs/design';
 import { UniverDocsPlugin } from '@univerjs/docs';
 import { UniverDocsUIPlugin } from '@univerjs/docs-ui';
@@ -14,26 +9,35 @@ import { UniverSheetsPlugin } from '@univerjs/sheets';
 import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
 import { UniverUIPlugin } from '@univerjs/ui';
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState, useImperativeHandle } from 'react';
 import { UniverSheetsCustomMenuPlugin } from "./plugin";
 import DesignZhCN from '@univerjs/design/locale/zh-CN';
 import UIZhCN from '@univerjs/ui/locale/zh-CN';
 import DocsUIZhCN from '@univerjs/docs-ui/locale/zh-CN';
 import SheetsZhCN from '@univerjs/sheets/locale/zh-CN';
 import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN';
-// import ImportExcelButtonPlugin from '../../plugins/ImportExcelButton';
-// import ExportExcelButtonPlugin from '../../plugins/ExportExcelButton';
+import { importExcel } from './utils/importExcelUtils';
 
-// eslint-disable-next-line react/display-name
-const UniverSheet = forwardRef(() => {
+import '@univerjs/design/lib/index.css';
+import "@univerjs/ui/lib/index.css";
+import "@univerjs/docs-ui/lib/index.css";
+import "@univerjs/sheets-ui/lib/index.css";
+import "@univerjs/sheets-formula/lib/index.css";
+
+const UniverSheet = forwardRef(({ }, ref) => {
     const univerRef = useRef(null);
     const workbookRef = useRef(null);
     const containerRef = useRef(null);
     const [univeData, setUniveData] = useState({});
+    const fUniverRef = useRef(null);
 
     const handleImportExcel: any = (data: any) => {
         setUniveData(data);
     }
+
+    useImperativeHandle(ref, () => ({
+        univerAPI: fUniverRef,
+    }));
 
     // ImportExcelButtonPlugin.setOnImportExcelCallback(handleImportExcel);
     UniverSheetsCustomMenuPlugin.setOnImportExcelCallback(handleImportExcel);
@@ -86,6 +90,8 @@ const UniverSheet = forwardRef(() => {
 
         // create workbook instance
         univer.createUnit(UniverInstanceType.UNIVER_SHEET, univeData);
+
+        fUniverRef.current = FUniver.newAPI(univer);
     };
 
     /**
