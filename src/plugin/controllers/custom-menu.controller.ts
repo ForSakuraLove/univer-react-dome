@@ -11,7 +11,7 @@ import { ExportExcelButtonOperation } from '../commands/operations/ExportExcelBu
 import { ImportExcelButtonIcon } from '../components/button-icon/ImportExcelButtonIcon';
 import { ExportExcelButtonIcon } from '../components/button-icon/ExportExcelButtonIcon';
 
-@OnLifecycle(LifecycleStages.Steady, CustomMenuController)
+@OnLifecycle(LifecycleStages.Rendered, CustomMenuController)
 export class CustomMenuController extends Disposable {
     constructor(
         @Inject(Injector) private readonly _injector: Injector,
