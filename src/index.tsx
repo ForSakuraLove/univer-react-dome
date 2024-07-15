@@ -9,14 +9,13 @@ import { UniverSheetsPlugin } from '@univerjs/sheets';
 import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
 import { UniverUIPlugin } from '@univerjs/ui';
-import React, { forwardRef, useEffect, useRef, useState, useImperativeHandle } from 'react';
-import { UniverSheetsCustomMenuPlugin } from "./plugin";
+import React, { forwardRef, useEffect, useRef, useImperativeHandle } from 'react';
 import DesignZhCN from '@univerjs/design/locale/zh-CN';
 import UIZhCN from '@univerjs/ui/locale/zh-CN';
 import DocsUIZhCN from '@univerjs/docs-ui/locale/zh-CN';
 import SheetsZhCN from '@univerjs/sheets/locale/zh-CN';
 import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN';
-import { importExcel } from './utils/importExcelUtils';
+import './index.sass'
 
 import '@univerjs/design/lib/index.css';
 import "@univerjs/ui/lib/index.css";
@@ -28,24 +27,12 @@ const UniverSheet = forwardRef(({ }, ref) => {
     const univerRef = useRef(null);
     const workbookRef = useRef(null);
     const containerRef = useRef(null);
-    const [univeData, setUniveData] = useState({});
     const fUniverRef = useRef(null);
-
-    const handleImportExcel: any = (data: any) => {
-        setUniveData(data);
-    }
 
     useImperativeHandle(ref, () => ({
         univerAPI: fUniverRef,
     }));
 
-    // ImportExcelButtonPlugin.setOnImportExcelCallback(handleImportExcel);
-    UniverSheetsCustomMenuPlugin.setOnImportExcelCallback(handleImportExcel);
-
-    /**
-     * Initialize univer instance and workbook instance
-     * @param data {IWorkbookData} document see https://univer.work/api/core/interfaces/IWorkbookData.html
-     */
     const init = () => {
         if (!containerRef.current) {
             throw Error('container not initialized');
@@ -83,20 +70,11 @@ const UniverSheet = forwardRef(({ }, ref) => {
         univer.registerPlugin(UniverSheetsUIPlugin);
         univer.registerPlugin(UniverSheetsFormulaPlugin);
 
-        // custom plugins
-        univer.registerPlugin(UniverSheetsCustomMenuPlugin);
-        // univer.registerPlugin(ImportExcelButtonPlugin);
-        // univer.registerPlugin(ExportExcelButtonPlugin);
-
-        // create workbook instance
-        univer.createUnit(UniverInstanceType.UNIVER_SHEET, univeData);
+        univer.createUnit(UniverInstanceType.UNIVER_SHEET, {});
 
         fUniverRef.current = FUniver.newAPI(univer);
     };
 
-    /**
-     * Destroy univer instance and workbook instance
-     */
     const destroyUniver = () => {
         univerRef.current = null;
         workbookRef.current = null;
@@ -107,11 +85,9 @@ const UniverSheet = forwardRef(({ }, ref) => {
         return () => {
             destroyUniver();
         };
-    }, [univeData]);
+    }, []);
 
-    return (
-        <div ref={containerRef} className="univer-container" style={{ height: '100%' }} />
-    );
+    return <div ref={containerRef} className="univer-container" />;
 
 });
 
