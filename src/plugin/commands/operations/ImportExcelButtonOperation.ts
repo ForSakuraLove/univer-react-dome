@@ -4,7 +4,7 @@ import type { IAccessor } from '@wendellhu/redi';
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
 import { UniverSheetsCustomMenuPlugin } from '../../index'
-import { DEFAULT_BORDER_COLOR } from '../../../utils/enum';
+import { DEFAULT_BORDER_COLOR } from '../../../components/utils/enum';
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook) => void,

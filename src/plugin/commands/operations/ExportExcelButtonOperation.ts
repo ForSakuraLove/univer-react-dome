@@ -3,8 +3,8 @@ import { CommandType } from '@univerjs/core';
 import type { IAccessor } from '@wendellhu/redi';
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
-import { borderMap } from '../../../utils/map'
-import { DEFAULT_BORDER_COLOR } from '../../../utils/enum';
+import { borderMap } from '../../../components/utils/map'
+import { DEFAULT_BORDER_COLOR } from '../../../components/utils/enum';
 
 //格式化时间
 const formatDate = (date: Date) => {

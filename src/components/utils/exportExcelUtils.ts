@@ -1,7 +1,7 @@
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
-import { borderMap } from '../utils/map'
-import { DEFAULT_BORDER_COLOR } from '../utils/enum';
+import { borderMap } from './map'
+import { DEFAULT_BORDER_COLOR } from './enum';
 import * as FUniver from "@univerjs/facade";
 
 //格式化时间

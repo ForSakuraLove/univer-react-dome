@@ -1,7 +1,7 @@
 import * as FUniver from "@univerjs/facade";
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
-import { DEFAULT_BORDER_COLOR } from '../utils/enum';
+import { DEFAULT_BORDER_COLOR } from './enum';
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook) => void,
