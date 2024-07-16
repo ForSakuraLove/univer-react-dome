@@ -23,9 +23,8 @@ import "@univerjs/docs-ui/lib/index.css";
 import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula/lib/index.css";
 
-const UniverSheet = forwardRef(({ }, ref) => {
+const UniverSheet = forwardRef(({ data }: any, ref) => {
     const univerRef = useRef(null);
-    const workbookRef = useRef(null);
     const containerRef = useRef(null);
     const fUniverRef = useRef(null);
 
@@ -70,21 +69,22 @@ const UniverSheet = forwardRef(({ }, ref) => {
         univer.registerPlugin(UniverSheetsUIPlugin);
         univer.registerPlugin(UniverSheetsFormulaPlugin);
 
-        univer.createUnit(UniverInstanceType.UNIVER_SHEET, {});
+        console.log('data')
+        console.log(data)
+
+        univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
 
         fUniverRef.current = FUniver.newAPI(univer);
     };
 
     const destroyUniver = () => {
         univerRef.current = null;
-        workbookRef.current = null;
     };
 
     useEffect(() => {
+        console.log('init')
         init();
-        return () => {
-            destroyUniver();
-        };
+        destroyUniver();
     }, []);
 
     return <div ref={containerRef} className="univer-container" />;
