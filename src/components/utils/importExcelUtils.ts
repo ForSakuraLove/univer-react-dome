@@ -620,6 +620,7 @@ export const importExcel = async (univerAPI: FUniver.FUniver | null) => {
                 }, {} as { [sheetId: string]: Partial<UniverJS.IWorksheetData> }),
                 resources: []
             };
+            univerAPI.createUniverSheet(workbookData)
             resolve(workbookData);
         }, (error) => {
             console.log('Error selecting or processing file:', error);

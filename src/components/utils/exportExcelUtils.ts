@@ -35,6 +35,7 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
     const sheets = univerWorkbook.getSheets()
 
     const sheetMap = univerWorkbook.getSnapshot().sheets
+    console.log(univerWorkbook.getSnapshot())
 
     const createColor = (rgb: UniverJS.Nullable<string>): ExcelJS.Color => {
         const colorValue = rgb ? 'FF' + rgb.slice(-6) : 'FFFFFFFF'; // 默认颜色是白色，如果rgb为null或undefined
@@ -244,6 +245,17 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                                 diagonal: diagonal,
                             }
                             excelCell.border = border;
+                            console.log(row + 1, col + 1)
+                            console.log(styleData)
+                            let fill: Partial<ExcelJS.Fill> = {}
+                            if (styleData.bg?.rgb) {
+                                fill = {
+                                    type: 'pattern',
+                                    // fgColor: createColor(styleData.bg.rgb),
+                                    bgColor: createColor(styleData.bg.rgb),
+                                }
+                            }
+                            excelCell.fill = fill
                         }
                     }
                 }

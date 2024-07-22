@@ -5,6 +5,13 @@ import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
 import { UniverSheetsCustomMenuPlugin } from '../../index'
 import { DEFAULT_BORDER_COLOR } from '../../../components/utils/enum';
+import {
+    AddWorksheetProtectionMutation,
+    DeleteWorksheetProtectionMutation,
+    WorkbookEditablePermission,
+    WorksheetProtectionRuleModel,
+    getSheetCommandTarget,
+} from "@univerjs/sheets";
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook) => void,
@@ -574,32 +581,65 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
     return sheetData;
 };
 
+const delay = (ms: any) => new Promise(resolve => setTimeout(resolve, ms));
+
 export const ImportExcelButtonOperation: ICommand = {
     id: 'custom-menu.operation.ImportExcel',
     type: CommandType.OPERATION,
     handler: async (accessor: IAccessor): Promise<boolean> => {
+        const permissionService = accessor.get(UniverJS.IPermissionService);
+        const newPermission = new UniverJS.PermissionService()
+        // console.log(permissionService)
+        // console.log(newPermission)
         const univer = accessor.get(UniverJS.IUniverInstanceService);
         const univerWorkbook = univer.getCurrentUnitForType<UniverJS.Workbook>(UniverJS.UniverInstanceType.UNIVER_SHEET)
-        console.log(univerWorkbook)
         if (!univerWorkbook) return false;
-
-        const sheetMap = univerWorkbook.getWorksheets();
-        sheetMap?.forEach((sheet: any) => {
-            univerWorkbook?.removeSheet(sheet.getSheetId());
+        const unitId = univerWorkbook.getUnitId();
+        const workbookPermissionInstance = new WorkbookEditablePermission(unitId);
+        newPermission.addPermissionPoint({
+            type: 1,
+            id: 'string',
+            status: UniverJS.PermissionStatus.DONE,
+            subType: 1,
+            value: '1111'
         });
-        waitUserSelectExcelFile((workbook: ExcelJS.Workbook) => {
-            workbook.eachSheet((worksheet: any, sheetId: any) => {
-                const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
-                univerWorkbook.addWorksheet(worksheet.name, sheetId, sheetInfo);
-            });
-            const univeData = univerWorkbook.getSnapshot();
-            console.log(univeData)
-            if (UniverSheetsCustomMenuPlugin.onImportExcelCallback) {
-                UniverSheetsCustomMenuPlugin.onImportExcelCallback(univeData);
-            } else {
-                console.error("onImportExcelCallback is not defined");
-            }
-        });
+        console.log(newPermission.getPermissionPoint('string'));
+        // console.log(workbookPermissionInstance)
+        let permissionPoint = newPermission.getPermissionPoint(
+            workbookPermissionInstance.id
+        );
+        console.log(permissionPoint, 'permissionPoint before');
+        await delay(3000);
+        if (!permissionPoint) {
+            const a = newPermission.addPermissionPoint(workbookPermissionInstance);
+            console.log(a, 'a')
+            permissionPoint = workbookPermissionInstance;
+        }
+        console.log(permissionPoint, 'permissionPoint before');
+        await delay(3000);
+        newPermission.updatePermissionPoint(
+            workbookPermissionInstance.id,
+            !permissionPoint.value
+        );
+        console.log(permissionPoint, 'permissionPoint before');
+        await delay(3000);
+        // const sheetMap = univerWorkbook.getWorksheets();
+        // sheetMap?.forEach((sheet: any) => {
+        //     univerWorkbook?.removeSheet(sheet.getSheetId());
+        // });
+        // waitUserSelectExcelFile((workbook: ExcelJS.Workbook) => {
+        //     workbook.eachSheet((worksheet: any, sheetId: any) => {
+        //         const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
+        //         univerWorkbook.addWorksheet(worksheet.name, sheetId, sheetInfo);
+        //     });
+        //     const univeData = univerWorkbook.getSnapshot();
+        //     console.log(univeData)
+        //     if (UniverSheetsCustomMenuPlugin.onImportExcelCallback) {
+        //         UniverSheetsCustomMenuPlugin.onImportExcelCallback(univeData);
+        //     } else {
+        //         console.error("onImportExcelCallback is not defined");
+        //     }
+        // });
 
         return true;
     },

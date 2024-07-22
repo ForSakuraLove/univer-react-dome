@@ -69,12 +69,16 @@ const UniverSheet = forwardRef(({ data }: any, ref) => {
         univer.registerPlugin(UniverSheetsUIPlugin);
         univer.registerPlugin(UniverSheetsFormulaPlugin);
 
-        console.log('data')
-        console.log(data)
-
         univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
 
-        fUniverRef.current = FUniver.newAPI(univer);
+        const univerAPI = FUniver.newAPI(univer);
+        const workBook = univerAPI.getActiveWorkbook()
+        if (!workBook) return
+        // setTimeout(() => {
+        //     console.log(false)
+        //     workBook.setEditable(false)
+        // }, 1000)
+        fUniverRef.current = univerAPI
     };
 
     const destroyUniver = () => {
@@ -82,7 +86,6 @@ const UniverSheet = forwardRef(({ data }: any, ref) => {
     };
 
     useEffect(() => {
-        console.log('init')
         init();
         destroyUniver();
     }, []);
