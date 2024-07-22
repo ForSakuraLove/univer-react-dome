@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState, } from 'react';
 import UniverSheet from './components/UniverSheet/index';
-import { importExcel } from './components/utils/importExcelUtils';
+import { importExcel, importExcelData } from './components/utils/importExcelUtils';
 import { exportExcel } from './components/utils/exportExcelUtils';
 import './index.sass'
 
@@ -5749,6 +5749,13 @@ const UniverComponent: React.FC = () => {
     return (
         <div className='nz_univer'>
             <div className='header'>
+                <button onClick={() => {
+                    importExcelData().then((workBookData) => {
+                        console.log(workBookData);
+                    }).catch((error) => {
+                        console.log(error);
+                    });
+                }}>0</button>
                 <button onClick={() => importExcel(univerAPI)}>1</button>
                 <button onClick={() => exportExcel(univerAPI)}>2</button>
             </div>

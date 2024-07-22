@@ -3,7 +3,7 @@ import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
 import { DEFAULT_BORDER_COLOR } from './enum';
 
-export const waitUserSelectExcelFile = (
+const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook, fileName: string) => void,
     onError: (error: Error) => void
 ) => {
@@ -48,17 +48,16 @@ export const waitUserSelectExcelFile = (
  * @param sheet The Excel worksheet to parse.
  * @returns An object containing information about the worksheet.
  */
-export const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorksheetData => {
+const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorksheetData => {
     const sheetId = sheet.name;
     const name = sheet.name;
-    // const type = SheetTypes.GRID;
     const rowCount = sheet.rowCount + 100;
     const columnCount = sheet.columnCount + 100;
-    const defaultColumnWidth = 72;
-    const defaultRowHeight = 17.5;
+    const defaultColumnWidth = 88;
+    const defaultRowHeight = 24;
     const scrollTop = 200;
     const scrollLeft = 100;
-    const selections = ['A2'];
+    const selections = ['A1'];
     const hidden = UniverJS.BooleanNumber.FALSE;
     // const status = 1;
     const showGridlines = 1;
@@ -581,50 +580,75 @@ export const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IW
     return sheetData;
 };
 
-export const importExcel = async (univerAPI: FUniver.FUniver | null) => {
+export const importExcel = (univerAPI: FUniver.FUniver | null) => {
+
+    if (!univerAPI) return
+
+    const univerWorkbook = univerAPI.getActiveWorkbook()
+    if (!univerWorkbook) {
+        console.log('univerWorkbook is null')
+        return
+    }
+
+    waitUserSelectExcelFile((workbook: ExcelJS.Workbook) => {
+        const unid = univerWorkbook.getId()
+        univerAPI.disposeUnit(unid)
+        let sheetInfos: UniverJS.IWorksheetData[] = [];
+        workbook.eachSheet((worksheet: any) => {
+            const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
+            sheetInfos = [...sheetInfos, sheetInfo];
+        });
+        let workbookInfo: UniverJS.IWorkbookData = {
+            id: 'someUniqueId',
+            rev: 1,
+            name: 'Workbook Name',
+            appVersion: '1.0.0',
+            locale: UniverJS.LocaleType.ZH_CN,
+            styles: {},
+            sheetOrder: sheetInfos.map((sheet) => sheet.id),
+            sheets: sheetInfos.reduce((acc, sheetInfo) => {
+                acc[sheetInfo.id] = sheetInfo;
+                return acc;
+            }, {} as { [sheetId: string]: Partial<UniverJS.IWorksheetData> }),
+            resources: []
+        };
+        univerAPI.createUniverSheet(workbookInfo)
+    }, (error) => {
+        console.log('Error selecting or processing file:', error);
+    })
+
+}
+
+export const importExcelData = (): Promise<UniverJS.IWorkbookData> => {
     return new Promise((resolve, reject) => {
-        if (!univerAPI) {
-            console.log('univerAPI is null');
-            reject(new Error('univerAPI is null'));
-            return;
-        }
-
-        const univerWorkbook = univerAPI.getActiveWorkbook();
-        if (!univerWorkbook) {
-            console.log('univerWorkbook is null');
-            reject(new Error('univerWorkbook is null'));
-            return;
-        }
-
         waitUserSelectExcelFile((workbook: ExcelJS.Workbook, fileName: string) => {
-            const unid = univerWorkbook.getId();
-            univerAPI.disposeUnit(unid);
+            try {
+                let sheetInfos: UniverJS.IWorksheetData[] = [];
+                workbook.eachSheet((worksheet: ExcelJS.Worksheet) => {
+                    const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
+                    sheetInfos.push(sheetInfo);
+                });
 
-            let sheetInfos: UniverJS.IWorksheetData[] = [];
-            workbook.eachSheet((worksheet: any) => {
-                const sheetInfo: UniverJS.IWorksheetData = parseExcelUniverSheetInfo(worksheet);
-                sheetInfos = [...sheetInfos, sheetInfo];
-            });
-
-            const workbookData: UniverJS.IWorkbookData = {
-                id: fileName || 'newExcel',
-                rev: 1,
-                name: fileName || 'newExcel',
-                appVersion: '1.0.0',
-                locale: UniverJS.LocaleType.ZH_CN,
-                styles: {},
-                sheetOrder: sheetInfos.map((sheet) => sheet.id),
-                sheets: sheetInfos.reduce((acc, sheetInfo) => {
-                    acc[sheetInfo.id] = sheetInfo;
-                    return acc;
-                }, {} as { [sheetId: string]: Partial<UniverJS.IWorksheetData> }),
-                resources: []
-            };
-            univerAPI.createUniverSheet(workbookData)
-            resolve(workbookData);
+                const workBookData: UniverJS.IWorkbookData = {
+                    id: 'someUniqueId',
+                    rev: 1,
+                    name: fileName,
+                    appVersion: '1.0.0',
+                    locale: UniverJS.LocaleType.ZH_CN,
+                    styles: {},
+                    sheetOrder: sheetInfos.map((sheet) => sheet.id),
+                    sheets: sheetInfos.reduce((acc, sheetInfo) => {
+                        acc[sheetInfo.id] = sheetInfo;
+                        return acc;
+                    }, {} as { [sheetId: string]: Partial<UniverJS.IWorksheetData> }),
+                    resources: []
+                };
+                resolve(workBookData);
+            } catch (error) {
+                reject('Error processing workbook: ' + error);
+            }
         }, (error) => {
-            console.log('Error selecting or processing file:', error);
-            reject(error);
+            reject('Error selecting or processing file: ' + error);
         });
     });
 };
