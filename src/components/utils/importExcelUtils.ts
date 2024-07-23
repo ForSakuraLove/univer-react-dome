@@ -496,6 +496,10 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
         const column = sheet.getColumn(colIndex)
         columnData[colIndex - 1] = { w: column.width ? column.width * COLUMN_WIDTH_EXPANSION_MULTIPLE : undefined };
     }
+
+    const toKey = (row: number, col: number) => `${row},${col}`;
+
+    const formulaMap = new Map();
     for (let rowIndex = 1; rowIndex <= sheet.rowCount; rowIndex++) {
         const row = sheet.getRow(rowIndex)
         for (let colIndex = 1; colIndex <= sheet.columnCount; colIndex++) {
@@ -504,7 +508,27 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
             // console.log(rowIndex, colIndex)
             // console.log(cell)
             if (cell.model.formula) {
-                cellData[rowIndex - 1][colIndex - 1] = { f: '=' + cell.model.formula, v: cell.model.result }
+                if (cell.model?.ref) {
+                    const startCell = [rowIndex - 1, colIndex - 1];
+                    const [startCellRef, endCellRef] = cell.model.ref.split(':');
+                    const startRowIndex = parseInt(startCellRef.match(/\d+/)[0]);
+                    const startColIndex = startCellRef.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+                    const endRowIndex = parseInt(endCellRef.match(/\d+/)[0]);
+                    const endColIndex = endCellRef.charCodeAt(0) - 'A'.charCodeAt(0) + 1;
+                    formulaMap.set(toKey(startRowIndex - 1, startColIndex - 1), '=' + cell.model.formula);
+                    for (let r = startRowIndex; r <= endRowIndex; r++) {
+                        for (let c = startColIndex; c <= endColIndex; c++) {
+                            if (r !== startRowIndex || c !== startColIndex) {
+                                formulaMap.set(toKey(r - 1, c - 1), startCell);
+                            }
+                        }
+                    }
+                    cellData[rowIndex - 1][colIndex - 1] = { f: '=' + cell.model.formula, v: cell.model.result }
+                } else {
+                    cellData[rowIndex - 1][colIndex - 1] = { f: '=' + cell.model.formula, v: cell.model.result }
+                }
+            } else if (cell.model.sharedFormula) {
+                cellData[rowIndex - 1][colIndex - 1] = { v: cell.model.result }
             } else {
                 if (cell.value) {
                     if (cell.isMerged && cell !== cell.master) {
@@ -558,7 +582,7 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                                 },
                                 rev: 0,
                                 locale: UniverJS.LocaleType.ZH_CN,
-                                title: 'title',
+                                title: sheet.name,
                                 body: {
                                     dataStream,
                                     textRuns,
@@ -581,6 +605,36 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
             }
             const cellStyle = getCellStyle(cell)
             cellData[rowIndex - 1][colIndex - 1].s = cellStyle
+        }
+    }
+
+    const adjustFormula = (formula: any, rowOffset: number, colOffset: number) => {
+        return formula.replace(/([A-Z])(\d+)/g, (match: any, colLetter: any, rowNumber: any) => {
+            const newRow = parseInt(rowNumber) + rowOffset;
+            const newCol = String.fromCharCode(colLetter.charCodeAt(0) + colOffset);
+            return `${newCol}${newRow}`;
+        });
+    };
+
+    for (const [key, value] of formulaMap.entries()) {
+        const [row, col] = key.split(',').map(Number);
+
+        if (!cellData[row]) {
+            cellData[row] = [];
+        }
+
+        if (typeof value === 'string') {
+            cellData[row][col] = { ...cellData[row][col], f: value, };
+        } else if (Array.isArray(value)) {
+            const [refRow, refCol] = value;
+            const refKey = toKey(refRow, refCol);
+            const refFormula = formulaMap.get(refKey);
+            if (typeof refFormula === 'string') {
+                const rowOffset = row - refRow;
+                const colOffset = col - refCol;
+                const adjustedFormula = adjustFormula(refFormula, rowOffset, colOffset);
+                cellData[row][col] = { ...cellData[row][col], f: adjustedFormula, };
+            }
         }
     }
 
