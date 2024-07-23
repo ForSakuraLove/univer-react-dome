@@ -560,6 +560,8 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                                     ts = {
                                         ...ts,
                                         ...cellStyle,
+                                        ff: cellStyle.ff || ff,
+                                        fs: cellStyle.fs || fs,
                                         cl: {
                                             rgb: cellStyle.cl?.rgb || rgb,
                                         }
