@@ -1,1 +1,2 @@
-export const DEFAULT_BORDER_COLOR =  '#d6d8db'
+export const ROW_HEIGHT_EXPANSION_MULTIPLE = 1.5
+export const COLUMN_WIDTH_EXPANSION_MULTIPLE = 8

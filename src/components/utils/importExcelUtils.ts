@@ -1,7 +1,7 @@
 import * as FUniver from "@univerjs/facade";
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
-import { DEFAULT_BORDER_COLOR } from './enum';
+import { COLUMN_WIDTH_EXPANSION_MULTIPLE, ROW_HEIGHT_EXPANSION_MULTIPLE } from "./enum";
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook, fileName: string) => void,
@@ -57,17 +57,6 @@ const hexToRgb = (hex: string) => {
     return `rgb(${r},${g},${b})`;
 }
 
-// const getCellFont = (cellStyle: ExcelJS.Style): UniverJS.IStyleBase => {
-//     const fontStyle: UniverJS.IStyleBase = {}
-//     if(cellStyle.font){
-//         fontStyle.ff = cellStyle.font.name
-//         fontStyle.fs = cellStyle.font.size
-//         fontStyle.it = cellStyle.font.italic? 1 : 0
-//         fontStyle.bl = cellStyle.font.bold? 1 : 0
-//     }
-//     return fontStyle
-// }
-
 const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
     let cellStyle: UniverJS.IStyleData = {}
 
@@ -121,7 +110,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         if (cell.style.fill.type === 'pattern') {
             if (cell.style.fill.fgColor?.argb) {
                 const argb = cell.style.fill.fgColor.argb
-                cellStyleBackground.rgb = '#' + argb.slice(-6);
+                cellStyleBackground.rgb = hexToRgb(argb)
             }
         }
     }
@@ -130,7 +119,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
     let cellStyleBorder: UniverJS.IBorderData = {}
     //左边框
     if (cell.style.border?.left) {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#000000' }
+        let cellStyleIColorStyle: UniverJS.IColorStyle = {}
         let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
         if (cell.style.border.left.style === 'thin') {
             cellStyleIBorderStyleData.s = 1
@@ -161,7 +150,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.left.color?.argb) {
             const argb = cell.style.border.left.color.argb
-            cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
+            cellStyleIColorStyle.rgb = hexToRgb(argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.l = cellStyleIBorderStyleData
@@ -169,7 +158,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
 
     //上边框
     if (cell.style.border?.top) {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#000000' }
+        let cellStyleIColorStyle: UniverJS.IColorStyle = {}
         let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
         if (cell.style.border.top.style === 'thin') {
             cellStyleIBorderStyleData.s = 1
@@ -200,7 +189,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.top.color?.argb) {
             const argb = cell.style.border.top.color.argb
-            cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
+            cellStyleIColorStyle.rgb = hexToRgb(argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.t = cellStyleIBorderStyleData
@@ -208,7 +197,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
 
     //右边框
     if (cell.style.border?.right) {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#000000' }
+        let cellStyleIColorStyle: UniverJS.IColorStyle = {}
         let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
         if (cell.style.border.right.style === 'thin') {
             cellStyleIBorderStyleData.s = 1
@@ -239,7 +228,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.right.color?.argb) {
             const argb = cell.style.border.right.color.argb
-            cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
+            cellStyleIColorStyle.rgb = hexToRgb(argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.r = cellStyleIBorderStyleData
@@ -247,7 +236,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
 
     //下边框
     if (cell.style.border?.bottom) {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#000000' }
+        let cellStyleIColorStyle: UniverJS.IColorStyle = {}
         let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
         if (cell.style.border.bottom.style === 'thin') {
             cellStyleIBorderStyleData.s = 1
@@ -278,7 +267,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.bottom.color?.argb) {
             const argb = cell.style.border.bottom.color.argb
-            cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
+            cellStyleIColorStyle.rgb = hexToRgb(argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.b = cellStyleIBorderStyleData
@@ -286,7 +275,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
 
     //对角线
     if (cell.style.border?.diagonal) {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#000000' }
+        let cellStyleIColorStyle: UniverJS.IColorStyle = {}
         let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
         if (cell.style.border.diagonal.style === 'thin') {
             cellStyleIBorderStyleData.s = 1
@@ -317,7 +306,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.diagonal.color?.argb) {
             const argb = cell.style.border.diagonal.color.argb
-            cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
+            cellStyleIColorStyle.rgb = hexToRgb(argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         if (cell.style.border.diagonal.up === false && cell.style.border.diagonal.down === true) {
@@ -331,11 +320,11 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
     }
 
     //字体颜色
-    let cellStyleForeground: UniverJS.IColorStyle = { rgb: '#000000' }
+    let cellStyleForeground: UniverJS.IColorStyle = {}
     if (cell.style.font?.color) {
         if (cell.style.font.color?.argb) {
             const argb = cell.style.font.color.argb
-            cellStyleForeground.rgb = '#' + argb.slice(-6);
+            cellStyleForeground.rgb = hexToRgb(argb)
         }
     }
 
@@ -499,20 +488,20 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
     //行高
     for (let rowIndex = 1; rowIndex <= sheet.rowCount; rowIndex++) {
         const row = sheet.getRow(rowIndex)
-        rowData[rowIndex - 1] = { h: row.height ? row.height * (1 + 1 / 3) : undefined };
+        rowData[rowIndex - 1] = { h: row.height ? row.height * ROW_HEIGHT_EXPANSION_MULTIPLE : undefined };
     }
 
     //列宽
     for (let colIndex = 1; colIndex <= sheet.columnCount; colIndex++) {
         const column = sheet.getColumn(colIndex)
-        columnData[colIndex - 1] = { w: column.width ? column.width * 8 : undefined };
+        columnData[colIndex - 1] = { w: column.width ? column.width * COLUMN_WIDTH_EXPANSION_MULTIPLE : undefined };
     }
     for (let rowIndex = 1; rowIndex <= sheet.rowCount; rowIndex++) {
         const row = sheet.getRow(rowIndex)
         for (let colIndex = 1; colIndex <= sheet.columnCount; colIndex++) {
             const cell = row.getCell(colIndex)
             cellData[rowIndex - 1] = cellData[rowIndex - 1] || {}
-            console.log(rowIndex, colIndex)
+            // console.log(rowIndex, colIndex)
             // console.log(cell)
             if (cell.model.formula) {
                 cellData[rowIndex - 1][colIndex - 1] = { f: '=' + cell.model.formula, v: cell.model.result }
