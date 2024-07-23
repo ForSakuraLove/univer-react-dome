@@ -57,7 +57,18 @@ const hexToRgb = (hex: string) => {
     return `rgb(${r},${g},${b})`;
 }
 
-const getCellStyle = (cell: ExcelJS.Cell) => {
+// const getCellFont = (cellStyle: ExcelJS.Style): UniverJS.IStyleBase => {
+//     const fontStyle: UniverJS.IStyleBase = {}
+//     if(cellStyle.font){
+//         fontStyle.ff = cellStyle.font.name
+//         fontStyle.fs = cellStyle.font.size
+//         fontStyle.it = cellStyle.font.italic? 1 : 0
+//         fontStyle.bl = cellStyle.font.bold? 1 : 0
+//     }
+//     return fontStyle
+// }
+
+const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
     let cellStyle: UniverJS.IStyleData = {}
 
     //字体名字，如宋体
@@ -85,11 +96,11 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
     let cellStyleTextDecoration: UniverJS.TextDecoration = 12
     if (cell.style.font?.underline) {
         cellStyleITextDecoration.s = 1
-        if (cell.font.underline === 'double') {
+        if (cell.style.font.underline === 'double') {
             cellStyleTextDecoration = 10
-        } else if (cell.font.underline === 'singleAccounting') {
+        } else if (cell.style.font.underline === 'singleAccounting') {
             cellStyleTextDecoration = 14
-        } else if (cell.font.underline === 'doubleAccounting') {
+        } else if (cell.style.font.underline === 'doubleAccounting') {
             cellStyleTextDecoration = 15
         }
         cellStyleITextDecoration.t = cellStyleTextDecoration
@@ -105,7 +116,7 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
     // let cellStyleOverlineITextDecoration: UniverJS.ITextDecoration = { s: 0,};
 
     //背景颜色
-    let cellStyleBackground: UniverJS.IColorStyle = { rgb: '#ffffff' }
+    let cellStyleBackground: UniverJS.IColorStyle = {}
     if (cell.style.fill) {
         if (cell.style.fill.type === 'pattern') {
             if (cell.style.fill.fgColor?.argb) {
@@ -154,12 +165,6 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.l = cellStyleIBorderStyleData
-    } else {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: DEFAULT_BORDER_COLOR }
-        let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
-        cellStyleIBorderStyleData.s = 1
-        cellStyleIBorderStyleData.cl = cellStyleIColorStyle
-        cellStyleBorder.l = cellStyleIBorderStyleData
     }
 
     //上边框
@@ -197,12 +202,6 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
             const argb = cell.style.border.top.color.argb
             cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
         }
-        cellStyleIBorderStyleData.cl = cellStyleIColorStyle
-        cellStyleBorder.t = cellStyleIBorderStyleData
-    } else {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
-        let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
-        cellStyleIBorderStyleData.s = 1
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.t = cellStyleIBorderStyleData
     }
@@ -244,12 +243,6 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.r = cellStyleIBorderStyleData
-    } else {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
-        let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
-        cellStyleIBorderStyleData.s = 1
-        cellStyleIBorderStyleData.cl = cellStyleIColorStyle
-        cellStyleBorder.r = cellStyleIBorderStyleData
     }
 
     //下边框
@@ -287,12 +280,6 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
             const argb = cell.style.border.bottom.color.argb
             cellStyleIColorStyle.rgb = '#' + argb.slice(-6);
         }
-        cellStyleIBorderStyleData.cl = cellStyleIColorStyle
-        cellStyleBorder.b = cellStyleIBorderStyleData
-    } else {
-        let cellStyleIColorStyle: UniverJS.IColorStyle = { rgb: '#d6d8db' }
-        let cellStyleIBorderStyleData: UniverJS.IBorderStyleData = { s: 0, cl: cellStyleIColorStyle }
-        cellStyleIBorderStyleData.s = 1
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.b = cellStyleIBorderStyleData
     }
@@ -438,7 +425,7 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
     cellStyle.st = cellStyleStrikeITextDecoration
     // cellStyle.ol
     cellStyle.bg = cellStyleBackground
-    // cellStyle.bd = cellStyleBorder
+    cellStyle.bd = cellStyleBorder
     cellStyle.cl = cellStyleForeground
     cellStyle.va = cellStyleBaselineOffset
     return cellStyle
@@ -526,7 +513,7 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
             const cell = row.getCell(colIndex)
             cellData[rowIndex - 1] = cellData[rowIndex - 1] || {}
             console.log(rowIndex, colIndex)
-            console.log(cell)
+            // console.log(cell)
             if (cell.model.formula) {
                 cellData[rowIndex - 1][colIndex - 1] = { f: '=' + cell.model.formula, v: cell.model.result }
             } else {
@@ -541,30 +528,20 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                             let st = 0;
                             const cellStyle = getCellStyle(cell)
                             richTextArray.forEach((rishTextCell) => {
+                                const exceljsCell: any = {
+                                    style: rishTextCell
+                                }
+                                const exceljsCellStyle = getCellStyle(exceljsCell)
                                 dataStream = dataStream + rishTextCell.text
                                 const rishTextLength = rishTextCell.text.length
-                                let rgb = 'rgb(0,0,0)'
-                                if (rishTextCell.font?.color?.argb) {
-                                    rgb = hexToRgb(rishTextCell.font.color.argb);
-                                }
-                                let ff = rishTextCell.font?.name || '微软雅黑'
-                                let fs = rishTextCell.font?.size || 10
                                 let ts = {
-                                    cl: {
-                                        rgb,
-                                    },
-                                    ff,
-                                    fs,
+                                    ...exceljsCellStyle,
                                 };
                                 if (st === 0) {
                                     ts = {
                                         ...ts,
                                         ...cellStyle,
-                                        ff: cellStyle.ff || ff,
-                                        fs: cellStyle.fs || fs,
-                                        cl: {
-                                            rgb: cellStyle.cl?.rgb || rgb,
-                                        }
+                                        bd: null,
                                     };
                                 }
                                 textRuns.push({
@@ -573,7 +550,6 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                                     ts
                                 });
                                 st += rishTextLength;
-
                             })
                             dataStream = dataStream.replace(/\n/g, '\r');
 
