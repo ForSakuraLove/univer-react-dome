@@ -438,7 +438,7 @@ const getCellStyle = (cell: ExcelJS.Cell) => {
     cellStyle.st = cellStyleStrikeITextDecoration
     // cellStyle.ol
     cellStyle.bg = cellStyleBackground
-    cellStyle.bd = cellStyleBorder
+    // cellStyle.bd = cellStyleBorder
     cellStyle.cl = cellStyleForeground
     cellStyle.va = cellStyleBaselineOffset
     return cellStyle
@@ -525,6 +525,8 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
         for (let colIndex = 1; colIndex <= sheet.columnCount; colIndex++) {
             const cell = row.getCell(colIndex)
             cellData[rowIndex - 1] = cellData[rowIndex - 1] || {}
+            console.log(rowIndex, colIndex)
+            console.log(cell)
             if (cell.model.formula) {
                 cellData[rowIndex - 1][colIndex - 1] = { f: '=' + cell.model.formula, v: cell.model.result }
             } else {
@@ -533,12 +535,11 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                         cellData[rowIndex - 1][colIndex - 1] = {};
                     } else {
                         if ((cell.value as ExcelJS.CellRichTextValue).richText) {
-                            console.log(rowIndex, colIndex)
                             const richTextArray = (cell.value as ExcelJS.CellRichTextValue).richText;
-                            console.log(richTextArray)
                             let dataStream = '';
                             let textRuns: UniverJS.ITextRun[] = []
                             let st = 0;
+                            const cellStyle = getCellStyle(cell)
                             richTextArray.forEach((rishTextCell) => {
                                 dataStream = dataStream + rishTextCell.text
                                 const rishTextLength = rishTextCell.text.length
@@ -546,18 +547,31 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                                 if (rishTextCell.font?.color?.argb) {
                                     rgb = hexToRgb(rishTextCell.font.color.argb);
                                 }
+                                let ff = rishTextCell.font?.name || '微软雅黑'
+                                let fs = rishTextCell.font?.size || 10
+                                let ts = {
+                                    cl: {
+                                        rgb,
+                                    },
+                                    ff,
+                                    fs,
+                                };
+                                if (st === 0) {
+                                    ts = {
+                                        ...ts,
+                                        ...cellStyle,
+                                        cl: {
+                                            rgb: cellStyle.cl?.rgb || rgb,
+                                        }
+                                    };
+                                }
                                 textRuns.push({
                                     ed: st + rishTextLength,
-                                    st: st,
-                                    ts: {
-                                        cl: {
-                                            rgb: rgb,
-                                        },
-                                        ff: rishTextCell.font?.name || '微软雅黑',
-                                        fs: rishTextCell.font?.size || 10,
-                                    }
+                                    st,
+                                    ts
                                 });
-                                st = st + rishTextLength
+                                st += rishTextLength;
+
                             })
                             dataStream = dataStream.replace(/\n/g, '\r');
 
