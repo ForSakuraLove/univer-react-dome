@@ -58,8 +58,8 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                 const univerCell = range?.getCellData();
                 const excelCell = excelSheet.getCell(row + 1, col + 1);
 
-                // console.log(row + 1, col + 1)
-                // console.log(univerCell)
+                console.log(row + 1, col + 1)
+                console.log(univerCell)
                 if (univerCell) {
                     if (univerCell?.v) {
                         excelCell.value = univerCell.v
