@@ -9,12 +9,15 @@ import { UniverSheetsPlugin } from '@univerjs/sheets';
 import { UniverSheetsFormulaPlugin } from '@univerjs/sheets-formula';
 import { UniverSheetsUIPlugin } from '@univerjs/sheets-ui';
 import { UniverUIPlugin } from '@univerjs/ui';
+import { UniverSheetsHyperLinkPlugin } from '@univerjs/sheets-hyper-link';
+import { UniverSheetsHyperLinkUIPlugin } from '@univerjs/sheets-hyper-link-ui';
 import React, { forwardRef, useEffect, useRef, useImperativeHandle } from 'react';
 import DesignZhCN from '@univerjs/design/locale/zh-CN';
 import UIZhCN from '@univerjs/ui/locale/zh-CN';
 import DocsUIZhCN from '@univerjs/docs-ui/locale/zh-CN';
 import SheetsZhCN from '@univerjs/sheets/locale/zh-CN';
 import SheetsUIZhCN from '@univerjs/sheets-ui/locale/zh-CN';
+import SheetsHyperLinkUIZhCN from '@univerjs/sheets-hyper-link-ui/locale/zh-CN';
 import './index.sass'
 
 import '@univerjs/design/lib/index.css';
@@ -22,6 +25,7 @@ import "@univerjs/ui/lib/index.css";
 import "@univerjs/docs-ui/lib/index.css";
 import "@univerjs/sheets-ui/lib/index.css";
 import "@univerjs/sheets-formula/lib/index.css";
+import '@univerjs/sheets-hyper-link-ui/lib/index.css';
 
 const UniverSheet = forwardRef(({ data }: any, ref) => {
     const univerRef = useRef(null);
@@ -46,6 +50,7 @@ const UniverSheet = forwardRef(({ data }: any, ref) => {
                     SheetsUIZhCN,
                     UIZhCN,
                     DesignZhCN,
+                    SheetsHyperLinkUIZhCN,
                 ),
             },
         });
@@ -68,6 +73,9 @@ const UniverSheet = forwardRef(({ data }: any, ref) => {
         univer.registerPlugin(UniverSheetsPlugin);
         univer.registerPlugin(UniverSheetsUIPlugin);
         univer.registerPlugin(UniverSheetsFormulaPlugin);
+
+        univer.registerPlugin(UniverSheetsHyperLinkPlugin);
+        univer.registerPlugin(UniverSheetsHyperLinkUIPlugin);
 
         univer.createUnit(UniverInstanceType.UNIVER_SHEET, data);
 

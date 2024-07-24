@@ -534,8 +534,8 @@ const parseExcelUniverSheetInfo = (sheet: ExcelJS.Worksheet): UniverJS.IWorkshee
                     if (cell.isMerged && cell !== cell.master) {
                         cellData[rowIndex - 1][colIndex - 1] = {};
                     } else {
-                        if ((cell.value as ExcelJS.CellRichTextValue).richText) {
-                            const richTextArray = (cell.value as ExcelJS.CellRichTextValue).richText;
+                        if ((cell.value as ExcelJS.CellRichTextValue).richText || (cell.model.hyperlink)) {
+                            const richTextArray = (cell.value as ExcelJS.CellRichTextValue).richText || cell.model?.text?.richText;
                             let dataStream = '';
                             let textRuns: UniverJS.ITextRun[] = []
                             let st = 0;

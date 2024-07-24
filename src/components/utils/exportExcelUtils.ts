@@ -1,7 +1,6 @@
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
 import { borderMap } from './map'
-import { DEFAULT_BORDER_COLOR } from './enum';
 import * as FUniver from "@univerjs/facade";
 
 //格式化时间
@@ -57,9 +56,11 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                 const range = univerSheet.getRange(row, col)
                 const univerCell = range?.getCellData();
                 const excelCell = excelSheet.getCell(row + 1, col + 1);
+                if (row + 1 === 11) {
+                    console.log(row + 1, col + 1)
+                    console.log(univerCell)
+                }
 
-                console.log(row + 1, col + 1)
-                console.log(univerCell)
                 if (univerCell) {
                     if (univerCell?.v) {
                         excelCell.value = univerCell.v
@@ -172,7 +173,7 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                             //边框
                             let top: ExcelJS.Borders['top'] | undefined = undefined;
                             if (styleData?.bd?.t) {
-                                if (styleData.bd.t.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.t.s !== 1) {
+                                if (styleData.bd.t.s !== 1) {
                                     top = {
                                         style: borderMap[styleData.bd.t.s],
                                         color: createColor(styleData.bd.t.cl.rgb),
@@ -181,7 +182,7 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                             }
                             let left: ExcelJS.Borders['left'] | undefined = undefined;
                             if (styleData?.bd?.l) {
-                                if (styleData.bd.l.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.l.s !== 1) {
+                                if (styleData.bd.l.s !== 1) {
                                     left = {
                                         style: borderMap[styleData.bd.l.s],
                                         color: createColor(styleData.bd.l.cl.rgb),
@@ -190,7 +191,7 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                             }
                             let right: ExcelJS.Borders['right'] | undefined = undefined;
                             if (styleData?.bd?.r) {
-                                if (styleData.bd.r.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.r.s !== 1) {
+                                if (styleData.bd.r.s !== 1) {
                                     right = {
                                         style: borderMap[styleData.bd.r.s],
                                         color: createColor(styleData.bd.r.cl.rgb),
@@ -199,7 +200,7 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                             }
                             let bottom: ExcelJS.Borders['bottom'] | undefined = undefined;
                             if (styleData?.bd?.b) {
-                                if (styleData.bd.b.cl.rgb !== DEFAULT_BORDER_COLOR || styleData.bd.b.s !== 1) {
+                                if (styleData.bd.b.s !== 1) {
                                     bottom = {
                                         style: borderMap[styleData.bd.b.s],
                                         color: createColor(styleData.bd.b.cl.rgb),
@@ -245,8 +246,8 @@ export const exportExcel = async (univerAPI: FUniver.FUniver | null) => {
                                 diagonal: diagonal,
                             }
                             excelCell.border = border;
-                            console.log(row + 1, col + 1)
-                            console.log(styleData)
+                            // console.log(row + 1, col + 1)
+                            // console.log(styleData)
                             let fill: Partial<ExcelJS.Fill> = {}
                             if (styleData.bg?.rgb) {
                                 fill = {
