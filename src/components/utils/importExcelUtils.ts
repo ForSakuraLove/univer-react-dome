@@ -1,7 +1,8 @@
 import * as FUniver from "@univerjs/facade";
 import * as UniverJS from "@univerjs/core";
 import * as ExcelJS from 'exceljs';
-import { COLUMN_WIDTH_EXPANSION_MULTIPLE, ROW_HEIGHT_EXPANSION_MULTIPLE } from "./enum";
+import { ColorType, COLUMN_WIDTH_EXPANSION_MULTIPLE, ROW_HEIGHT_EXPANSION_MULTIPLE } from "./enum";
+import { TinyColor } from '@ctrl/tinycolor';
 
 const waitUserSelectExcelFile = (
     onSelect: (workbook: ExcelJS.Workbook, fileName: string) => void,
@@ -43,18 +44,21 @@ const waitUserSelectExcelFile = (
     }
 };
 
-const hexToRgb = (hex: string) => {
-    let result = hex;
-    if (hex.startsWith('FF')) {
-        result = result.slice(2);
+
+const getHexColor = (type: string, fill: any) => {
+    if (type === ColorType.ARGB) {
+        let color;
+        if (fill.startsWith('#')) {
+            color = new TinyColor(fill.slice(3)).toHexString();
+        } else {
+            color = new TinyColor(fill.slice(2)).toHexString();
+        }
+        return color;
+    } else if (type === ColorType.Theme) {
+        // return colorToHex(fill.theme, fill.tint);
+        return undefined;
     }
-
-    const bigint = parseInt(result, 16);
-    const r = (bigint >> 16) & 255;
-    const g = (bigint >> 8) & 255;
-    const b = bigint & 255;
-
-    return `rgb(${r},${g},${b})`;
+    return undefined;
 }
 
 const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
@@ -110,7 +114,10 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         if (cell.style.fill.type === 'pattern') {
             if (cell.style.fill.fgColor?.argb) {
                 const argb = cell.style.fill.fgColor.argb
-                cellStyleBackground.rgb = hexToRgb(argb)
+                cellStyleBackground.rgb = getHexColor(ColorType.ARGB, argb)
+            } else if (cell.style.fill.fgColor?.theme) {
+                const fgColor = cell.style.fill.fgColor
+                cellStyleBackground.rgb = getHexColor(ColorType.Theme, fgColor)
             }
         }
     }
@@ -150,7 +157,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.left.color?.argb) {
             const argb = cell.style.border.left.color.argb
-            cellStyleIColorStyle.rgb = hexToRgb(argb)
+            cellStyleIColorStyle.rgb = getHexColor(ColorType.ARGB, argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.l = cellStyleIBorderStyleData
@@ -189,7 +196,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.top.color?.argb) {
             const argb = cell.style.border.top.color.argb
-            cellStyleIColorStyle.rgb = hexToRgb(argb)
+            cellStyleIColorStyle.rgb = getHexColor(ColorType.ARGB, argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.t = cellStyleIBorderStyleData
@@ -228,7 +235,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.right.color?.argb) {
             const argb = cell.style.border.right.color.argb
-            cellStyleIColorStyle.rgb = hexToRgb(argb)
+            cellStyleIColorStyle.rgb = getHexColor(ColorType.ARGB, argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.r = cellStyleIBorderStyleData
@@ -267,7 +274,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.bottom.color?.argb) {
             const argb = cell.style.border.bottom.color.argb
-            cellStyleIColorStyle.rgb = hexToRgb(argb)
+            cellStyleIColorStyle.rgb = getHexColor(ColorType.ARGB, argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         cellStyleBorder.b = cellStyleIBorderStyleData
@@ -306,7 +313,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
         }
         if (cell.style.border.diagonal.color?.argb) {
             const argb = cell.style.border.diagonal.color.argb
-            cellStyleIColorStyle.rgb = hexToRgb(argb)
+            cellStyleIColorStyle.rgb = getHexColor(ColorType.ARGB, argb)
         }
         cellStyleIBorderStyleData.cl = cellStyleIColorStyle
         if (cell.style.border.diagonal.up === false && cell.style.border.diagonal.down === true) {
@@ -324,7 +331,7 @@ const getCellStyle = (cell: ExcelJS.Cell): UniverJS.IStyleData => {
     if (cell.style.font?.color) {
         if (cell.style.font.color?.argb) {
             const argb = cell.style.font.color.argb
-            cellStyleForeground.rgb = hexToRgb(argb)
+            cellStyleForeground.rgb = getHexColor(ColorType.ARGB, argb)
         }
     }
 

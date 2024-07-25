@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ctrl/tinycolor": "4.1.0",
     "@univerjs/core": "0.2.4",
     "@univerjs/design": "0.2.4",
     "@univerjs/docs": "0.2.4",
@@ -20,11 +21,11 @@
     "@univerjs/rpc": "0.2.4",
     "@univerjs/sheets": "0.2.4",
     "@univerjs/sheets-formula": "0.2.4",
+    "@univerjs/sheets-hyper-link": "0.2.4",
+    "@univerjs/sheets-hyper-link-ui": "0.2.4",
     "@univerjs/sheets-numfmt": "0.2.4",
     "@univerjs/sheets-ui": "0.2.4",
     "@univerjs/ui": "0.2.4",
-    "@univerjs/sheets-hyper-link": "0.2.4",
-    "@univerjs/sheets-hyper-link-ui": "0.2.4",
     "@wendellhu/redi": "0.16.0",
     "exceljs": "4.4.0",
     "react": "18.2.0",
